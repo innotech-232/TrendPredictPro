@@ -12,7 +12,7 @@ interface YouTubeVideo {
 }
 
 // Fetch trending videos from YouTube Data API
-async function fetchTrendingVideos(region = "IN", maxResults = 6): Promise<YouTubeVideo[]> {
+async function fetchTrendingVideos(region = "IN", maxResults = 50): Promise<YouTubeVideo[]> {
   const apiKey = process.env.YOUTUBE_API_KEY
 
   if (!apiKey) {

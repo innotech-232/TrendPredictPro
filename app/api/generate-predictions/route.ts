@@ -80,7 +80,7 @@ Return ONLY valid JSON array, no other text.`
 
   try {
     const { text } = await generateText({
-      model: "google/gemini-1.5-mini",
+      model: "google/gemini-1.5-flash",
       prompt,
       temperature: 0.7,
     })

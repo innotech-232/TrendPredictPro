@@ -76,7 +76,7 @@ export function Dashboard() {
           <div className="space-y-4">
             {[
               { platform: "YouTube", count: 189, color: "from-red-500 to-red-600" },
-              { platform: "TikTok", count: 156, color: "from-black to-gray-800" },
+              // { platform: "TikTok", count: 156, color: "from-black to-gray-800" },
               { platform: "Instagram", count: 142, color: "from-pink-500 to-purple-600" },
             ].map((p) => (
               <div key={p.platform} className="flex justify-between items-center">
@@ -95,11 +95,11 @@ export function Dashboard() {
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950 p-3 rounded-xl border border-blue-200 dark:border-blue-800">
                 <p className="text-sm font-semibold text-blue-900 dark:text-blue-100">LinkedIn</p>
-                <p className="text-xs text-blue-600 dark:text-blue-300 mt-1">Q1 2025</p>
+                <p className="text-xs text-blue-600 dark:text-blue-300 mt-1">Q1 2026</p>
               </div>
               <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950 dark:to-pink-950 p-3 rounded-xl border border-purple-200 dark:border-purple-800">
                 <p className="text-sm font-semibold text-purple-900 dark:text-purple-100">X (Twitter)</p>
-                <p className="text-xs text-purple-600 dark:text-purple-300 mt-1">Q1 2025</p>
+                <p className="text-xs text-purple-600 dark:text-purple-300 mt-1">Q1 2026</p>
               </div>
             </div>
           </div>

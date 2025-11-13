@@ -36,7 +36,7 @@ interface Prediction {
   momentum: string
 }
 
-async function fetchTrendingVideos(region = "IN", maxResults = 6): Promise<YouTubeVideo[]> {
+async function fetchTrendingVideos(region = "IN", maxResults = 50): Promise<YouTubeVideo[]> {
   const apiKey = process.env.YOUTUBE_API_KEY
 
   if (!apiKey) {
@@ -75,6 +75,66 @@ async function fetchTrendingVideos(region = "IN", maxResults = 6): Promise<YouTu
     console.error("[v0] Error fetching YouTube videos:", error)
     throw error
   }
+}
+
+// List of Gemini models to try in order
+const GEMINI_MODELS = [
+  "gemini-2.0-flash-exp",
+  "gemini-2.0-flash",
+  "gemini-1.5-flash",
+  "gemini-2.5-flash",
+  "gemini-1.5-pro",
+]
+
+// Retry logic with model rotation
+async function retryWithModelRotation(
+  prompt: string,
+  apiKey: string,
+  maxRetries: number = 3,
+  initialDelayMs: number = 1000,
+): Promise<string> {
+  let lastError: any
+  const genAI = new GoogleGenerativeAI(apiKey)
+  
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    // Rotate through different models on each retry
+    const modelIndex = attempt % GEMINI_MODELS.length
+    const modelName = GEMINI_MODELS[modelIndex]
+    
+    try {
+      console.log(`[v0] Attempt ${attempt + 1}/${maxRetries}: Trying model "${modelName}"...`)
+      const model = genAI.getGenerativeModel({ model: modelName })
+      const result = await model.generateContent(prompt)
+      const text = result.response.text()
+      console.log(`[v0] Success with model "${modelName}"`)
+      return text
+    } catch (error: any) {
+      lastError = error
+      
+      // Check if it's a retriable error (503, 429, timeout, etc.)
+      const isRetriable = 
+        error?.status === 503 || 
+        error?.status === 429 || 
+        error?.status === 500 ||
+        error?.message?.includes('overloaded') ||
+        error?.message?.includes('timeout') ||
+        error?.message?.includes('not found')
+      
+      if (!isRetriable || attempt === maxRetries - 1) {
+        throw error
+      }
+      
+      console.log(`[v0] Model "${modelName}" failed (status: ${error?.status}), will try another model...`)
+      
+      // Exponential backoff with jitter before next attempt
+      const delayMs = initialDelayMs * Math.pow(2, attempt) + Math.random() * 1000
+      console.log(`[v0] Waiting ${Math.round(delayMs)}ms before retry...`)
+      
+      await new Promise(resolve => setTimeout(resolve, delayMs))
+    }
+  }
+  
+  throw lastError
 }
 
 async function analyzeWithGemini(videos: YouTubeVideo[]): Promise<any[]> {
@@ -120,12 +180,10 @@ Return ONLY valid JSON array, no other text, no markdown, no code blocks.`
       throw new Error("GOOGLE_AI_API_KEY not configured")
     }
 
-    const genAI = new GoogleGenerativeAI(apiKey)
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" })
-    const result = await model.generateContent(prompt)
-    let text = result.response.text()
+    // Use retry logic with model rotation
+    let text = await retryWithModelRotation(prompt, apiKey, 3, 1000)
 
-    console.log("[v0] Gemini response received")
+    console.log("[v0] Gemini response received successfully")
 
     const jsonMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/)
     if (jsonMatch) {
@@ -152,7 +210,7 @@ Return ONLY valid JSON array, no other text, no markdown, no code blocks.`
       generatedAt: new Date().toISOString(),
     }))
   } catch (error) {
-    console.error("[v0] Gemini analysis error:", error)
+    console.error("[v0] Gemini analysis error after all model attempts:", error)
     return []
   }
 }

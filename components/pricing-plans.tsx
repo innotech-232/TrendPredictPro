@@ -8,7 +8,7 @@ import { Check, Zap } from "lucide-react"
 interface Plan {
   id: string
   name: string
-  credits: number
+  credits: string | number
   price: number
   popular?: boolean
   features: string[]
@@ -18,25 +18,25 @@ const plans: Plan[] = [
   {
     id: "starter",
     name: "Starter",
-    credits: 10,
-    price: 19,
-    features: ["10 Credits", "Basic trend predictions", "7 days history", "Email support"],
+    credits: 45,
+    price: 11,
+    features: ["45 Credits", "Basic trend predictions", "7 days history", "Email support"],
   },
   {
     id: "pro",
     name: "Pro",
-    credits: 50,
+    credits: 200,
     price: 49,
     popular: true,
-    features: ["50 Credits", "Advanced analytics", "30 days history", "Priority support", "Export reports"],
+    features: ["200 Credits", "Advanced analytics", "30 days history", "Priority support", "Export reports"],
   },
   {
     id: "enterprise",
     name: "Enterprise",
-    credits: 200,
-    price: 299,
+    credits: "Unlimited",
+    price: 101,
     features: [
-      "200 Credits",
+      "Unlimited Credits",
       "Unlimited analytics",
       "Unlimited history",
       "Dedicated support",
@@ -100,7 +100,7 @@ export function PricingPlans() {
             <div className="flex items-center gap-2 p-3 bg-primary/10 rounded-lg mb-6">
               <Zap className="w-5 h-5 text-primary" />
               <span className="font-bold text-foreground">{plan.credits} Credits</span>
-              <span className="text-sm text-muted-foreground">({Math.floor(plan.credits / 15)} predictions)</span>
+              {/* <span className="text-sm text-muted-foreground">({Math.floor(plan.credits / 15)} predictions)</span> */}
             </div>
 
             <Button
